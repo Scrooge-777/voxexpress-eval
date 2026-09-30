@@ -1,0 +1,33 @@
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Virtual Environments
+venv/
+env/
+.venv/
+ENV/
+
+# Data & Audio
+*.wav
+*.mp3
+*.flac
+*.ogg
+data/raw/
+data/processed/
+
+# Model Checkpoints
+*.pt
+*.pth
+*.onnx
+*.bin
+checkpoints/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+*.swp
+*~
