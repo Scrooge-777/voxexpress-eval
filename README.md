@@ -105,16 +105,6 @@ This measures true geometric transport cost rather than brittle point-to-point e
 Given reference speaker embedding $\mathbf{e}_{\text{ref}} \in \mathbb{R}^d$ and multilingual synthesized embedding $\mathbf{e}_{\text{synth}} \in \mathbb{R}^d$:
 $$\mathcal{S}_{\text{speaker}} = \frac{\mathbf{e}_{\text{ref}} \cdot \mathbf{e}_{\text{synth}}}{\|\mathbf{e}_{\text{ref}}\| \|\mathbf{e}_{\text{synth}}\|}$$
 
----
-
-## 📅 Long-Term 60-Day Research & Engineering Roadmap
-
-Detailed day-by-day deliverables are mapped out in [ROADMAP.md](ROADMAP.md).
-
-- **Phase 1 (Days 1–15):** Mathematical Foundations, Signal Processing & Classical Acoustic Prosody.
-- **Phase 2 (Days 16–30):** Neural Cross-Lingual Alignment & Speaker Manifold Verification.
-- **Phase 3 (Days 31–45):** Affective Expressiveness & Semantic-Prosodic Coupling.
-- **Phase 4 (Days 46–60+):** Autonomous Cloud Benchmarking, Open Leaderboard & Research Paper.
 
 ---
 
