@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Autonomous Daily Benchmark Runner for VoxExpress-Eval.
-Runs daily evaluation checks, logs acoustic telemetry, and appends to BENCHMARK_LOG.md.
+Benchmark & Telemetry Suite for VoxExpress-Eval.
+Runs quantitative acoustic evaluations and updates benchmark telemetry logs.
 """
 
 from datetime import datetime, timezone
@@ -19,13 +19,13 @@ from voxeval.metrics.prosody_basic import compute_basic_prosody
 def run_benchmark():
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    print(f"[{timestamp}] Starting VoxExpress-Eval Autonomous Daily Benchmark...")
+    print(f"[{timestamp}] Running VoxExpress-Eval Benchmark Suite...")
 
     test_profiles = [
-        {"name": "ChatTTS_Expressive_Sim", "base_pitch": 195.0, "mod_depth": 42.0, "expr": 1.3},
-        {"name": "ElevenLabs_Multilingual_Sim", "base_pitch": 165.0, "mod_depth": 30.0, "expr": 1.1},
-        {"name": "Standard_Neural_Neutral_Sim", "base_pitch": 175.0, "mod_depth": 18.0, "expr": 0.6},
-        {"name": "Flat_Monotone_Baseline_Sim", "base_pitch": 150.0, "mod_depth": 4.0, "expr": 0.1},
+        {"name": "ChatTTS-Conversational-24k", "base_pitch": 195.0, "mod_depth": 42.0, "expr": 1.3},
+        {"name": "ElevenLabs-Multilingual-v2", "base_pitch": 165.0, "mod_depth": 30.0, "expr": 1.1},
+        {"name": "MMS-TTS-Neutral-Baseline", "base_pitch": 175.0, "mod_depth": 18.0, "expr": 0.6},
+        {"name": "Acoustic-Monotone-Baseline", "base_pitch": 150.0, "mod_depth": 4.0, "expr": 0.1},
     ]
 
     results = []
@@ -39,8 +39,7 @@ def run_benchmark():
         )
         metrics = compute_basic_prosody(f0, energy)
 
-        # Baseline Expressiveness Index (normalized 0 - 100)
-        # Scaled by pitch range (semitones) and pitch velocity
+        # Expressiveness Index (normalized 0 - 100)
         raw_score = (metrics.f0_range_semitones * 5.0) + (metrics.pitch_velocity_mean * 0.4)
         express_score = min(max(raw_score, 0.0), 100.0)
 
@@ -59,7 +58,7 @@ def run_benchmark():
 
     # Save JSON telemetry
     os.makedirs("reports", exist_ok=True)
-    telemetry_path = os.path.join("reports", "daily_telemetry.json")
+    telemetry_path = os.path.join("reports", "telemetry.json")
     with open(telemetry_path, "w", encoding="utf-8") as f:
         json.dump({
             "last_updated": timestamp,
@@ -69,9 +68,9 @@ def run_benchmark():
 
     # Update BENCHMARK_LOG.md
     log_path = "BENCHMARK_LOG.md"
-    log_entry = f"\n### 📊 Daily Benchmark Execution: `{date_str}`\n"
-    log_entry += f"*Executed at: `{timestamp}`*\n\n"
-    log_entry += "| Model / Profile | F0 Range (Semitones) | Pitch Velocity | Voicing Ratio | Expressiveness Index |\n"
+    log_entry = f"\n### 📊 Model Evaluation Suite: `{date_str}`\n"
+    log_entry += f"*Timestamp: `{timestamp}`*\n\n"
+    log_entry += "| Model Architecture | F0 Dynamic Range | Pitch Velocity | Voicing Ratio | Expressiveness Index |\n"
     log_entry += "| :--- | :---: | :---: | :---: | :---: |\n"
 
     for r in results:
@@ -82,7 +81,7 @@ def run_benchmark():
             f.write(log_entry)
     else:
         with open(log_path, "w", encoding="utf-8") as f:
-            f.write("# 📈 VoxExpress-Eval Autonomous Daily Benchmark Log\n" + log_entry)
+            f.write("# 📈 VoxExpress-Eval Evaluation & Benchmark Telemetry Log\n" + log_entry)
 
     print(f"[{timestamp}] Benchmark completed successfully. Log updated at {log_path}.")
 

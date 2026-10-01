@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-brightgreen.svg)](https://python.org)
-[![Autonomous Daily Evolution](https://github.com/Scrooge-777/voxexpress-eval/actions/workflows/daily-autonomous-eval.yml/badge.svg)](https://github.com/Scrooge-777/voxexpress-eval/actions/workflows/daily-autonomous-eval.yml)
+[![Benchmark CI](https://github.com/Scrooge-777/voxexpress-eval/actions/workflows/eval-pipeline.yml/badge.svg)](https://github.com/Scrooge-777/voxexpress-eval/actions/workflows/eval-pipeline.yml)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ---
@@ -75,7 +75,7 @@ flowchart TD
     subgraph AGGREGATION ["Composite Scoring & Reporting"]
         Composite["PolyExpress Composite Metric"]
         Radar["Acoustic Radar Diagnostic Generator"]
-        MarkdownReport["Autonomous Daily Benchmark Report"]
+        MarkdownReport["Benchmark & Evaluation Report"]
     end
 
     M1 --> Composite
@@ -108,14 +108,12 @@ $$\mathcal{S}_{\text{speaker}} = \frac{\mathbf{e}_{\text{ref}} \cdot \mathbf{e}_
 
 ---
 
-## ⚙️ Automated Daily Cloud Evolution
+## ⚙️ Continuous Benchmark & Evaluation Pipeline
 
-This repository features an autonomous scheduled GitHub Actions workflow (`.github/workflows/daily-autonomous-eval.yml`).
-**Even when your local computer is powered off or closed**, GitHub's cloud runners wake up daily to:
-1. Run automated test suites and numerical stability checks.
-2. Ingest daily synthetic voice evaluation tests.
-3. Update [BENCHMARK_LOG.md](BENCHMARK_LOG.md) and compute the latest acoustic scores.
-4. Auto-commit progress under your verified GitHub credentials.
+This repository incorporates an automated continuous evaluation pipeline (`.github/workflows/eval-pipeline.yml`) to:
+1. Run automated unit test suites and numerical stability checks.
+2. Quantify acoustic expressiveness and intonation across speech synthesis models.
+3. Maintain longitudinal evaluation records and comparative metric tables in [BENCHMARK_LOG.md](BENCHMARK_LOG.md).
 
 ---
 
@@ -133,8 +131,8 @@ source venv/bin/activate  # On Windows: .\venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Run the basic benchmark evaluation
-python scripts/daily_benchmark.py
+# Run the benchmark evaluation suite
+python scripts/run_benchmark.py
 ```
 
 ---

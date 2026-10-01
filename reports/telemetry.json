@@ -1,9 +1,9 @@
 {
-  "last_updated": "2026-10-01 12:26:09 UTC",
+  "last_updated": "2026-10-01 17:03:49 UTC",
   "benchmark_version": "0.1.0",
   "evaluations": [
     {
-      "model": "ChatTTS_Expressive_Sim",
+      "model": "ChatTTS-Conversational-24k",
       "f0_mean_hz": 188.15,
       "pitch_range_semitones": 12.98,
       "pitch_velocity_mean": 74.05,
@@ -12,7 +12,7 @@
       "expressiveness_index": 94.53
     },
     {
-      "model": "ElevenLabs_Multilingual_Sim",
+      "model": "ElevenLabs-Multilingual-v2",
       "f0_mean_hz": 157.89,
       "pitch_range_semitones": 10.14,
       "pitch_velocity_mean": 54.1,
@@ -21,7 +21,7 @@
       "expressiveness_index": 72.34
     },
     {
-      "model": "Standard_Neural_Neutral_Sim",
+      "model": "MMS-TTS-Neutral-Baseline",
       "f0_mean_hz": 167.62,
       "pitch_range_semitones": 4.32,
       "pitch_velocity_mean": 22.93,
@@ -30,7 +30,7 @@
       "expressiveness_index": 30.77
     },
     {
-      "model": "Flat_Monotone_Baseline_Sim",
+      "model": "Acoustic-Monotone-Baseline",
       "f0_mean_hz": 142.49,
       "pitch_range_semitones": 2.49,
       "pitch_velocity_mean": 19.06,

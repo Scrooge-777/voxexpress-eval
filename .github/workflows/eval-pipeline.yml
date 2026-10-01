@@ -1,16 +1,16 @@
-name: Autonomous Daily Evolution & Evaluation
+name: Evaluation Benchmark Pipeline
 
 on:
   schedule:
-    # Runs everyday at 06:00 UTC (11:30 AM IST)
+    # Daily benchmark run at 06:00 UTC
     - cron: '0 6 * * *'
-  workflow_dispatch: # Allows manual trigger from GitHub UI anytime
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  daily-evolution:
+  benchmark-eval:
     runs-on: ubuntu-latest
 
     steps:
@@ -35,18 +35,18 @@ jobs:
         run: |
           python -m unittest discover -s tests -p "*_test.py" -v || true
 
-      - name: 📊 Execute Autonomous Benchmark
+      - name: 📊 Run Benchmark Suite
         run: |
-          python scripts/daily_benchmark.py
+          python scripts/run_benchmark.py
 
-      - name: 🚀 Commit & Push Daily Evolution
+      - name: 🚀 Update Evaluation Telemetry
         run: |
           git config user.name "Scrooge-777"
           git config user.email "318593710+Scrooge-777@users.noreply.github.com"
           git add -A
           if git diff --staged --quiet; then
-            echo "No changes to commit today."
+            echo "No changes to record."
           else
-            git commit -m "chore(auto): daily autonomous benchmark & evaluation update [skip ci]"
+            git commit -m "chore(eval): update benchmark telemetry and score logs"
             git push origin main
           fi
