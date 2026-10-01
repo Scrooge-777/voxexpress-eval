@@ -1,0 +1,49 @@
+# Default Evaluation Pipeline Configuration
+
+pipeline:
+  device: "cpu"            # "cuda" or "cpu"
+  fp16: false              # use fp16 for neural encoders
+  batch_size: 16
+  cache_dir: "data/cache"
+  enable_cache: true
+  num_workers: 4
+
+audio:
+  sample_rate: 16000
+  target_lufs: -23.0
+  normalize_loudness: true
+
+metrics:
+  intelligibility:
+    enabled: true
+    model: "base"          # faster-whisper model size: tiny, base, small, medium, large-v3
+    compute_cer: true
+  naturalness:
+    enabled: true
+    model: "utmos"
+  speaker_sim:
+    enabled: true
+    model: "ecapa_tdnn"
+    metric: "cosine"
+  prosody:
+    enabled: true
+    f0_min: 65.0
+    f0_max: 500.0
+    dtw_alignment: true
+  spectral:
+    enabled: true
+    metric: "mcd"
+    n_mfcc: 13
+  emotion:
+    enabled: true
+    model: "emotion2vec"
+    distance: "cosine"
+  crosslingual:
+    enabled: true
+    model: "mms_lid"
+    detect_accent_leakage: true
+
+output:
+  format: "parquet"        # "parquet" or "csv"
+  export_plots: true
+  report_dir: "reports"

@@ -1,0 +1,24 @@
+# Aggregator Training Configuration
+
+model:
+  type: "mlp"              # "ridge" or "mlp"
+  hidden_dims: [64, 32]
+  dropout: 0.1
+  activation: "gelu"
+
+training:
+  learning_rate: 0.001
+  weight_decay: 0.01
+  batch_size: 64
+  epochs: 100
+  early_stopping_patience: 15
+
+loss:
+  mse_weight: 1.0
+  ranking_weight: 0.5      # Bradley-Terry pairwise ranking loss weight (lambda)
+  margin: 0.1
+
+cv:
+  strategy: "leave_one_language_out" # or "k_fold"
+  n_folds: 5
+  seed: 42

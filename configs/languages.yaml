@@ -1,0 +1,45 @@
+# Language Support Matrix & Encoders
+
+languages:
+  en:
+    name: "English"
+    whisper_code: "en"
+    lid_code: "eng"
+    is_tonal: false
+    script: "Latin"
+  es:
+    name: "Spanish"
+    whisper_code: "es"
+    lid_code: "spa"
+    is_tonal: false
+    script: "Latin"
+  zh:
+    name: "Mandarin Chinese"
+    whisper_code: "zh"
+    lid_code: "cmn"
+    is_tonal: true
+    script: "Han"
+  hi:
+    name: "Hindi"
+    whisper_code: "hi"
+    lid_code: "hin"
+    is_tonal: false
+    script: "Devanagari"
+  fr:
+    name: "French"
+    whisper_code: "fr"
+    lid_code: "fra"
+    is_tonal: false
+    script: "Latin"
+  de:
+    name: "German"
+    whisper_code: "de"
+    lid_code: "deu"
+    is_tonal: false
+    script: "Latin"
+  ja:
+    name: "Japanese"
+    whisper_code: "ja"
+    lid_code: "jpn"
+    is_tonal: false
+    script: "Kana/Kanji"

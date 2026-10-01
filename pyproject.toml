@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "expresseval"
+version = "0.1.0"
+description = "Automatic Objective Evaluation of Multilingual Expressive Speech Synthesis (TTS)"
+authors = [
+    { name = "Scrooge-777", email = "318593710+Scrooge-777@users.noreply.github.com" }
+]
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+keywords = ["tts", "speech-synthesis", "speech-evaluation", "expressive-tts", "multilingual", "audio", "metrics"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Multimedia :: Sound/Audio :: Analysis",
+]
+dependencies = [
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "soundfile>=0.12.0",
+    "pyyaml>=6.0",
+    "pandas>=2.0.0",
+    "pyarrow>=12.0.0",
+    "click>=8.0.0",
+    "tqdm>=4.65.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+]
+models = [
+    "faster-whisper>=1.0.0",
+    "torch>=2.0.0",
+    "torchaudio>=2.0.0",
+]
+
+[project.scripts]
+expresseval = "expresseval.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

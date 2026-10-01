@@ -1,0 +1,3 @@
+id,audio_path,text,language,ref_audio_path,emotion,system_id,human_mos
+sample_01,data/samples/sample_en.wav,The quick brown fox jumps over the lazy dog.,en,data/samples/sample_ref.wav,happy,ChatTTS-Conversational,4.35
+sample_02,data/samples/sample_ref.wav,Expressive speech evaluation benchmark.,en,data/samples/sample_en.wav,neutral,ElevenLabs-v2,4.2

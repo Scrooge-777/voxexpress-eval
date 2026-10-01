@@ -31,3 +31,11 @@ checkpoints/
 Thumbs.db
 *.swp
 *~
+
+# Reports and cache
+reports/*.csv
+reports/*.parquet
+data/cache/
+*.egg-info/
+dist/
+build/

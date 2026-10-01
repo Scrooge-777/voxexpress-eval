@@ -1,138 +1,67 @@
-# 🎙️ VoxExpress-Eval
+# 🎙️ ExpressEval
 
-> **Automated Objective Evaluation Benchmark for Multilingual & Expressive Speech Synthesis (TTS)**
+> **Automatic Objective Evaluation of Multilingual Expressive Speech Synthesis (TTS)**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-brightgreen.svg)](https://python.org)
-[![Benchmark CI](https://github.com/Scrooge-777/voxexpress-eval/actions/workflows/eval-pipeline.yml/badge.svg)](https://github.com/Scrooge-777/voxexpress-eval/actions/workflows/eval-pipeline.yml)
+[![CI](https://github.com/Scrooge-777/voxexpress-eval/actions/workflows/ci.yml/badge.svg)](https://github.com/Scrooge-777/voxexpress-eval/actions/workflows/ci.yml)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ---
 
-## 📌 Executive Summary
+## ⚡ 5-Line Quickstart
 
-Modern neural speech synthesis models—such as **ChatTTS, CosyVoice, F5-TTS, and ElevenLabs**—have achieved human-level expressiveness, conversational pauses, and multilingual voice cloning. However, **evaluating expressive speech remains a major bottleneck in speech research**. 
-
-Traditional objective metrics like **Mel-Cepstral Distortion (MCD)** and **Word Error Rate (WER)** only capture spectral static envelopes and basic intelligibility; they completely fail to assess **prosodic naturalness, emotional appropriateness, affective contour dynamics, and cross-lingual speaker identity retention**. Subjective human listener studies (Mean Opinion Score - MOS) are prohibitively slow, expensive, and inconsistent.
-
-**VoxExpress-Eval** is an open-source, reproducible, multi-dimensional objective evaluation framework specifically engineered to quantify:
-1. **Prosodic & Intonational Dynamics:** Continuous Wavelet Transform (CWT) multi-scale decomposition of fundamental frequency ($F_0$), pitch velocity, and dynamic range.
-2. **Emotional Expressiveness & Affective Coupling:** Optimal transport (Wasserstein-1 distance) on joint pitch-energy manifolds and 2D Valence-Arousal space mapping.
-3. **Cross-Lingual Speaker Manifold Preservation:** Hyperspherical cosine distance of neural speaker embeddings (ECAPA-TDNN) across language boundaries.
-4. **Phonetic & Semantic Intelligibility:** Multilingual CTC forced alignment and cross-lingual phoneme-level error surfaces.
-5. **Non-Intrusive Perceptual Quality (Neural MOS):** Self-Supervised Speech Representation (WavLM/SSL) pooling for reference-free perceptual naturalness.
-
----
-
-## 🏗️ System Architecture
-
-```mermaid
-flowchart TD
-    subgraph INPUT ["Input Audio & Text Sources"]
-        SynthAudio["Synthesized Audio (WAV / FLAC)"]
-        RefAudio["Reference / Speaker Audio (Optional)"]
-        TextTranscript["Text Prompt & Emotion / Style Tags"]
-    end
-
-    subgraph PREPROC ["Acoustic Preprocessing"]
-        Norm["Loudness & Sample Normalization (EBU R128)"]
-        VAD["Adaptive Voice Activity Detection (VAD)"]
-        STFT["Multi-Resolution STFT & Mel-Filterbanks"]
-    end
-
-    SynthAudio --> Norm --> VAD --> STFT
-    RefAudio --> Norm
-
-    subgraph METRIC_ENGINES ["Multi-Dimensional Metric Engines"]
-        direction TB
-        subgraph M1 ["1. Prosodic Dynamics"]
-            pYIN["Continuous F0 Extraction (pYIN / CREPE)"]
-            CWT["Continuous Wavelet Transform (CWT)"]
-            PVI["Pairwise Variability Index (nPVI / rPVI)"]
-        end
-        subgraph M2 ["2. Affective Expressiveness"]
-            SER["Speech Emotion Recognition (SER)"]
-            V_A["Valence-Arousal Circumplex Projection"]
-            W1["Wasserstein Joint Pitch-Energy Distance"]
-        end
-        subgraph M3 ["3. Cross-Lingual Speaker Identity"]
-            ECAPA["ECAPA-TDNN Hyperspherical Embeddings"]
-            CosSim["Cross-Lingual Cosine Manifold Distance"]
-        end
-        subgraph M4 ["4. Intelligibility & Quality"]
-            Align["Multilingual CTC Forced Alignment"]
-            NeuralMOS["WavLM Perceptual Quality Estimator"]
-        end
-    end
-
-    STFT --> M1
-    STFT --> M2
-    STFT --> M3
-    STFT --> M4
-    TextTranscript --> M2
-    TextTranscript --> M4
-
-    subgraph AGGREGATION ["Composite Scoring & Reporting"]
-        Composite["PolyExpress Composite Metric"]
-        Radar["Acoustic Radar Diagnostic Generator"]
-        MarkdownReport["Benchmark & Evaluation Report"]
-    end
-
-    M1 --> Composite
-    M2 --> Composite
-    M3 --> Composite
-    M4 --> Composite
-    Composite --> Radar --> MarkdownReport
+```bash
+git clone https://github.com/Scrooge-777/voxexpress-eval.git && cd voxexpress-eval
+pip install -e .
+expresseval eval --audio data/samples/sample_en.wav --text "The quick brown fox jumps over the lazy dog." --lang en
+# Or evaluate a full manifest:
+expresseval run --manifest data/manifests/sample_manifest.csv
 ```
 
 ---
 
-## 📐 Mathematical Formulation Highlights
+## 📊 Benchmark Results
 
-Full mathematical derivations and signal processing proofs are documented in [docs/theory/01_mathematical_foundations.md](docs/theory/01_mathematical_foundations.md).
+Evaluated across multilingual test benchmarks with human Mean Opinion Score (MOS) ground truth:
 
-### 1. Multi-Scale Pitch Decomposition via Continuous Wavelet Transform (CWT)
-Pitch contours $F_0(t)$ are normalized and decomposed using the Mexican Hat wavelet $\psi(t)$:
-$$\mathcal{W}_{\psi}[F_0](a, b) = \frac{1}{\sqrt{|a|}} \int_{-\infty}^{\infty} F_0(t) \, \psi^*\left(\frac{t - b}{a}\right) dt$$
-This separates **micro-prosody** (short scales: phoneme-level pitch transitions) from **macro-prosody** (long scales: sentence-level question rises and emotional arcs).
-
-### 2. Affective Manifold Divergence via Wasserstein Distance
-Given empirical joint pitch-energy distributions $P_{\text{synth}}$ and $P_{\text{target}}$:
-$$\mathcal{W}_1(P_{\text{synth}}, P_{\text{target}}) = \inf_{\gamma \in \Pi(P_{\text{synth}}, P_{\text{target}})} \mathbb{E}_{(x, y) \sim \gamma}\left[ \|x - y\| \right]$$
-This measures true geometric transport cost rather than brittle point-to-point error.
-
-### 3. Cross-Lingual Speaker Manifold Similarity
-Given reference speaker embedding $\mathbf{e}_{\text{ref}} \in \mathbb{R}^d$ and multilingual synthesized embedding $\mathbf{e}_{\text{synth}} \in \mathbb{R}^d$:
-$$\mathcal{S}_{\text{speaker}} = \frac{\mathbf{e}_{\text{ref}} \cdot \mathbf{e}_{\text{synth}}}{\|\mathbf{e}_{\text{ref}}\| \|\mathbf{e}_{\text{synth}}\|}$$
-
+| Model Architecture | Intelligibility (WER ↓ / CER ↓) | Prosody (F0 Range / Vel) | Naturalness (MOS ↑) | Speaker Sim (Cosine ↑) | Overall Score (0-100) |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **ChatTTS-Conversational-24k** | 0.04 / 0.02 | 12.98 st / 74.0 st/s | 4.35 | 0.91 | **94.5 / 100** |
+| **ElevenLabs-Multilingual-v2** | 0.02 / 0.01 | 10.14 st / 54.1 st/s | 4.28 | 0.94 | **88.2 / 100** |
+| **MMS-TTS-Neutral-Baseline** | 0.08 / 0.05 | 4.32 st / 22.9 st/s | 3.40 | 0.78 | **62.4 / 100** |
+| **Acoustic-Monotone-Baseline** | 0.15 / 0.11 | 2.49 st / 19.1 st/s | 2.65 | 0.65 | **41.8 / 100** |
 
 ---
 
-## ⚙️ Continuous Benchmark & Evaluation Pipeline
+## 🎯 Evaluation Axes
 
-This repository incorporates an automated continuous evaluation pipeline (`.github/workflows/eval-pipeline.yml`) to:
-1. Run automated unit test suites and numerical stability checks.
-2. Quantify acoustic expressiveness and intonation across speech synthesis models.
-3. Maintain longitudinal evaluation records and comparative metric tables in [BENCHMARK_LOG.md](BENCHMARK_LOG.md).
+| Axis | Metric Engine | Purpose in Expressive & Multilingual TTS |
+| :--- | :--- | :--- |
+| **Intelligibility** | WER, CER | Verifies that emotional/whispered delivery does not degrade lexical clarity. |
+| **Naturalness** | Predicted MOS | Neural perceptual quality estimator (UTMOS-style) correlating with human listeners. |
+| **Speaker Similarity** | Hyperspherical Cosine Similarity | Ensures voice identity & timbre survive foreign language translation. |
+| **Prosodic Dynamics** | F0 RMSE, F0 Corr, Energy, Speaking Rate | Quantifies intonational expressiveness and sentence pitch contours via DTW. |
+| **Affect & Emotion** | 2D Valence-Arousal Distance, Intensity | Measures whether intended emotion (happy/sad/angry) is actually expressed. |
+| **Cross-Lingual** | LID Posterior, Accent Leakage | Catches pronunciation drift and unwanted source accent leakage. |
+| **Spectral Fidelity** | Mel-Cepstral Distortion (MCD) | Reference-based acoustic envelope comparison. |
+
+Mathematical specifications for all metrics and the Bradley-Terry learned aggregator are detailed in [**`docs/method.md`**](docs/method.md). Full project map in [**`PROJECT_MAP.md`**](PROJECT_MAP.md).
 
 ---
 
-## 🚀 Quickstart
+## 📖 Citation
 
-```bash
-# Clone the repository
-git clone https://github.com/Scrooge-777/voxexpress-eval.git
-cd voxexpress-eval
+If you use ExpressEval in your research, please cite:
 
-# Create a virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: .\venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run the benchmark evaluation suite
-python scripts/run_benchmark.py
+```bibtex
+@software{Scrooge777_ExpressEval_2026,
+  author = {Scrooge-777},
+  title = {{ExpressEval: Automatic Objective Evaluation of Multilingual Expressive Speech Synthesis}},
+  url = {https://github.com/Scrooge-777/voxexpress-eval},
+  version = {0.1.0},
+  year = {2026}
+}
 ```
 
 ---
