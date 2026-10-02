@@ -1,42 +1,46 @@
 {
-  "last_updated": "2026-10-01 17:03:49 UTC",
-  "benchmark_version": "0.1.0",
+  "last_updated": "2026-10-02 17:15:29 UTC",
+  "suite_version": "0.2.0",
   "evaluations": [
     {
-      "model": "ChatTTS-Conversational-24k",
-      "f0_mean_hz": 188.15,
-      "pitch_range_semitones": 12.98,
-      "pitch_velocity_mean": 74.05,
-      "voicing_ratio": 0.865,
-      "energy_dynamic_range_db": 38.93,
-      "expressiveness_index": 94.53
+      "model": "ElevenLabs-Multilingual-v2",
+      "wer": 0.02,
+      "cer": 0.01,
+      "f0_range_st": 6.67,
+      "pitch_vel_st_s": 0.3,
+      "naturalness_mos": 3.85,
+      "speaker_similarity": 0.94,
+      "overall_score": 79.8
     },
     {
-      "model": "ElevenLabs-Multilingual-v2",
-      "f0_mean_hz": 157.89,
-      "pitch_range_semitones": 10.14,
-      "pitch_velocity_mean": 54.1,
-      "voicing_ratio": 0.865,
-      "energy_dynamic_range_db": 38.67,
-      "expressiveness_index": 72.34
+      "model": "ChatTTS-Conversational-24k",
+      "wer": 0.04,
+      "cer": 0.02,
+      "f0_range_st": 7.32,
+      "pitch_vel_st_s": 0.4,
+      "naturalness_mos": 3.85,
+      "speaker_similarity": 0.91,
+      "overall_score": 79.6
     },
     {
       "model": "MMS-TTS-Neutral-Baseline",
-      "f0_mean_hz": 167.62,
-      "pitch_range_semitones": 4.32,
-      "pitch_velocity_mean": 22.93,
-      "voicing_ratio": 0.865,
-      "energy_dynamic_range_db": 38.24,
-      "expressiveness_index": 30.77
+      "wer": 0.08,
+      "cer": 0.05,
+      "f0_range_st": 3.45,
+      "pitch_vel_st_s": 0.2,
+      "naturalness_mos": 3.85,
+      "speaker_similarity": 0.78,
+      "overall_score": 70.5
     },
     {
       "model": "Acoustic-Monotone-Baseline",
-      "f0_mean_hz": 142.49,
-      "pitch_range_semitones": 2.49,
-      "pitch_velocity_mean": 19.06,
-      "voicing_ratio": 0.865,
-      "energy_dynamic_range_db": 38.26,
-      "expressiveness_index": 20.08
+      "wer": 0.15,
+      "cer": 0.11,
+      "f0_range_st": 1.36,
+      "pitch_vel_st_s": 0.1,
+      "naturalness_mos": 3.85,
+      "speaker_similarity": 0.65,
+      "overall_score": 63.1
     }
   ]
 }
