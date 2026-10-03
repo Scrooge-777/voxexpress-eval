@@ -27,7 +27,7 @@ def evaluate_sample(audio_path, text, language, ref_audio_path=None, emotion="ne
     )
     result = pipeline.evaluate_item(item)
 
-    score_lines = [f"### 🏆 Overall Score: {result.get('overall_score', 0)} / 100\n"]
+    score_lines = [f"### Overall Score: {result.get('overall_score', 0)} / 100\n"]
     axis_scores = {}
     for k, v in result.items():
         if k.endswith("_score") and k != "overall_score":
