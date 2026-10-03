@@ -57,6 +57,61 @@ class TestMetrics(unittest.TestCase):
         # Median pitch should be close to 200 Hz
         self.assertAlmostEqual(float(np.median(voiced_f0)), 200.0, delta=10.0)
 
+    def test_spectral_metric_and_mcd(self):
+        from expresseval.metrics.spectral import SpectralMetric, compute_mfcc, compute_mcd_dtw
+        from expresseval.metrics.base import MetricInput
+
+        sr = 16000
+        wave1 = 0.5 * np.sin(2 * np.pi * 300.0 * np.linspace(0, 0.5, int(sr * 0.5))).astype(np.float32)
+        wave2 = 0.5 * np.sin(2 * np.pi * 300.0 * np.linspace(0, 0.5, int(sr * 0.5))).astype(np.float32)
+        
+        metric = SpectralMetric(n_mfcc=13)
+        inp = MetricInput(id="test", audio_waveform=wave1, sample_rate=sr, text="test", language="en", ref_waveform=wave2, ref_sample_rate=sr)
+        res = metric.compute(inp)
+        self.assertEqual(res.axis, "spectral")
+        self.assertGreaterEqual(res.score, 90.0)
+
+    def test_emotion_metric(self):
+        from expresseval.metrics.emotion import EmotionMetric
+        from expresseval.metrics.base import MetricInput
+
+        sr = 16000
+        wave = np.random.randn(sr).astype(np.float32) * 0.1
+        metric = EmotionMetric()
+        inp = MetricInput(id="test", audio_waveform=wave, sample_rate=sr, text="happy day", language="en", target_emotion="happy")
+        res = metric.compute(inp)
+        self.assertEqual(res.axis, "emotion")
+        self.assertGreaterEqual(res.score, 0.0)
+        self.assertLessEqual(res.score, 100.0)
+
+    def test_crosslingual_metric(self):
+        from expresseval.metrics.crosslingual import CrosslingualMetric
+        from expresseval.metrics.base import MetricInput
+
+        sr = 16000
+        wave = np.random.randn(sr).astype(np.float32) * 0.1
+        metric = CrosslingualMetric()
+        inp = MetricInput(id="test", audio_waveform=wave, sample_rate=sr, text="This is a test transcript.", language="en")
+        res = metric.compute(inp)
+        self.assertEqual(res.axis, "crosslingual")
+        self.assertGreater(res.score, 0.0)
+
+    def test_ridge_aggregator(self):
+        from expresseval.aggregator.model import RidgeAggregator
+
+        X = np.array([
+            [10.0, 20.0, 30.0],
+            [20.0, 40.0, 60.0],
+            [30.0, 60.0, 90.0],
+            [40.0, 80.0, 100.0],
+        ], dtype=np.float32)
+        y = np.array([2.0, 3.0, 4.0, 4.8], dtype=np.float32)
+
+        model = RidgeAggregator(alpha=0.5).fit(X, y)
+        preds = model.predict(X)
+        self.assertEqual(len(preds), 4)
+        self.assertTrue(np.all(preds >= 1.0) and np.all(preds <= 5.0))
+
 
 if __name__ == "__main__":
     unittest.main()
