@@ -16,6 +16,7 @@ ENV/
 *.mp3
 *.flac
 *.ogg
+!data/samples/*.wav
 data/raw/
 data/processed/
 
