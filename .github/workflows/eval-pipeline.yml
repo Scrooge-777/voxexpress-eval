@@ -91,6 +91,7 @@ jobs:
               COMMIT_MSG="${MESSAGES[$RAND_INDEX]}"
               echo "Committing with message: $COMMIT_MSG"
               git commit -m "$COMMIT_MSG"
-              git push origin main
+              git pull --rebase origin main
+              git push origin main || (git pull --rebase origin main && git push origin main)
             fi
           fi
