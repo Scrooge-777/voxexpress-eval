@@ -113,10 +113,15 @@ This guarantees that the learned score function is **globally transitive** and i
 ```bash
 git clone https://github.com/Scrooge-777/voxexpress-eval.git && cd voxexpress-eval
 pip install -e .
-expresseval eval --audio data/samples/sample_en.wav --text "The quick brown fox jumps over the lazy dog." --lang en
-# Or evaluate a full manifest:
+
+# Run the interactive quickstart evaluation demo:
+python examples/quickstart_eval.py
+
+# Or evaluate a full dataset manifest via CLI:
 expresseval run --manifest data/manifests/sample_manifest.csv
 ```
+
+📖 **Detailed Walkthrough:** Read the complete [Quickstart & Practical Usage Tutorial](docs/quickstart.md) for full CLI parameters, manifest specifications, and programmatic Python integration.
 
 ---
 
