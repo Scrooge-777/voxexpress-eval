@@ -85,7 +85,7 @@ graph LR
         C((System C:\nMMS Baseline))
         D((System D:\nMonotone))
 
-        A -->|P(A > B) = 0.58| B
+        A -->|P(A > B) =0.58| B
         A -->|P(A > C) = 0.89| C
         A -->|P(A > D) = 0.99| D
         B -->|P(B > C) = 0.82| C
