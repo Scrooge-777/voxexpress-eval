@@ -74,7 +74,10 @@ jobs:
           echo "Commits completed today ($TODAY): $COMMITS_TODAY"
 
           SHOULD_COMMIT=true
-          if [ "$COMMITS_TODAY" -ge 7 ]; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual workflow dispatch event detected: forcing commit."
+            SHOULD_COMMIT=true
+          elif [ "$COMMITS_TODAY" -ge 7 ]; then
             echo "Daily quota reached ($COMMITS_TODAY >= 7). Pausing until next cycle."
             SHOULD_COMMIT=false
           elif [ "$COMMITS_TODAY" -ge 5 ]; then
