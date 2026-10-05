@@ -89,3 +89,13 @@
 | **ChatTTS-Conversational-24k** | 0.04 / 0.02 | 7.32 st / 0.4 st/s | 3.85 | 0.91 | **79.6 / 100** |
 | **MMS-TTS-Neutral-Baseline** | 0.08 / 0.05 | 3.45 st / 0.2 st/s | 3.85 | 0.78 | **70.5 / 100** |
 | **Acoustic-Monotone-Baseline** | 0.15 / 0.11 | 1.36 st / 0.1 st/s | 3.85 | 0.65 | **63.1 / 100** |
+
+### 📊 Evaluation Run: `2026-10-05`
+*Timestamp: `2026-10-05 19:17:11 UTC`*
+
+| Model Architecture | Intelligibility (WER / CER) | Prosody (F0 Range / Vel) | Naturalness (MOS) | Speaker Sim | Overall Score |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **ElevenLabs-Multilingual-v2** | 0.02 / 0.01 | 6.67 st / 0.3 st/s | 3.85 | 0.94 | **79.8 / 100** |
+| **ChatTTS-Conversational-24k** | 0.04 / 0.02 | 7.32 st / 0.4 st/s | 3.85 | 0.91 | **79.6 / 100** |
+| **MMS-TTS-Neutral-Baseline** | 0.08 / 0.05 | 3.45 st / 0.2 st/s | 3.85 | 0.78 | **70.5 / 100** |
+| **Acoustic-Monotone-Baseline** | 0.15 / 0.11 | 1.36 st / 0.1 st/s | 3.85 | 0.65 | **63.1 / 100** |

@@ -110,7 +110,16 @@ jobs:
               COMMIT_MSG="${MESSAGES[$RAND_INDEX]}"
               echo "Committing with message: $COMMIT_MSG"
               git commit -m "$COMMIT_MSG"
-              git pull --rebase origin main
-              git push origin main || (git pull --rebase origin main && git push origin main)
+              
+              # Resilient push with rebase and auto-retry
+              for attempt in 1 2 3 4 5; do
+                echo "Push attempt $attempt..."
+                git pull --rebase origin main
+                if git push origin main; then
+                  echo "Successfully pushed evaluation commit to main!"
+                  break
+                fi
+                sleep 5
+              done
             fi
           fi
