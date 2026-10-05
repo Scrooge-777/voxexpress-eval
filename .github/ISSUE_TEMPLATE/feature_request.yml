@@ -1,0 +1,36 @@
+name: 💡 Feature Request & Research Proposal
+description: Suggest an acoustic metric, new model baseline, or pipeline extension
+title: "[Feature]: "
+labels: ["enhancement", "research"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        We welcome research proposals and benchmark suggestions for multilingual expressive speech synthesis evaluation.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Research Context or Problem Description
+      description: Is your feature request related to a specific acoustic limitation or missing evaluation axis?
+      placeholder: "Current speech evaluation lacks support for..."
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution or Metric Specification
+      description: Describe the mathematical formulation, proposed implementation, or model integration.
+      placeholder: "Introduce an objective metric based on..."
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Approaches Considered
+      description: Any alternative metrics or existing benchmark baselines you considered?
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution Willingness
+      options:
+        - label: I would be interested in submitting a Pull Request for this feature.

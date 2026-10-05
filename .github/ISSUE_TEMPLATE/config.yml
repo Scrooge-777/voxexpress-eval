@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 ExpressEval Documentation
+    url: https://github.com/Scrooge-777/voxexpress-eval/tree/main/docs
+    about: Read mathematical specifications, evaluation methodology, and model cards.
+  - name: 💬 GitHub Discussions
+    url: https://github.com/Scrooge-777/voxexpress-eval/discussions
+    about: Ask questions, share speech synthesis evaluation results, and discuss research.

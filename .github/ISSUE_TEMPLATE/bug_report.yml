@@ -1,0 +1,60 @@
+name: 🐛 Bug Report
+description: Report an anomaly, incorrect metric calculation, or runtime exception in ExpressEval
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a potential issue in **ExpressEval**. Please fill out the sections below to help us investigate and reproduce.
+  - type: input
+    id: version
+    attributes:
+      label: ExpressEval Version & Environment
+      description: What version of ExpressEval, Python, and OS are you using?
+      placeholder: "e.g., ExpressEval 0.2.0, Python 3.11, Ubuntu 22.04 / Windows 11"
+    validations:
+      required: true
+  - type: dropdown
+    id: dimension
+    attributes:
+      label: Affected Evaluation Dimension
+      description: Which metric dimension is behaving unexpectedly?
+      options:
+        - "Intelligibility (WER / CER)"
+        - "Prosodic Expressiveness (F0 Range / Velocity / Energy)"
+        - "Spectral Distance (MCD / Log-Spectral Distance)"
+        - "Perceived Emotion (Valence / Arousal / Dominance)"
+        - "Cross-Lingual Consistency"
+        - "Naturalness (MOS / DNSMOS)"
+        - "Speaker Similarity (Cosine / EER)"
+        - "Ridge Aggregator / Score Fusion"
+        - "CLI / Pipeline Execution"
+        - "Other"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce & Minimal Code
+      description: Provide the command line invocation or Python snippet reproducing the bug.
+      placeholder: |
+        ```python
+        from expresseval.pipeline import EvaluationPipeline
+        ...
+        ```
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen instead?
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Log Output or Traceback
+      description: Paste any error messages or tracebacks here.
+      render: shell
