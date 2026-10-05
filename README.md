@@ -108,33 +108,39 @@ This guarantees that the learned score function is **globally transitive** and i
 
 ---
 
-## ⚡ 5-Line Quickstart
+## ⚡ Quickstart: Which Method is Best for You?
+
+Choose the best way to run ExpressEval based on your workflow:
+
+| Your Goal | Recommended Workflow | Command |
+| :--- | :--- | :--- |
+| **Instant Test (Fastest)** | 🌟 **Interactive Demo** *(Best for instant verification)* | `python examples/quickstart_eval.py` |
+| **Interactive Visual GUI** | 🎨 **Gradio Web App** *(Best for drag-and-drop audio & radar charts)* | `python app/gradio_app.py` |
+| **Batch Dataset Scoring** | 🚀 **CLI Pipeline** *(Best for large-scale benchmarks & CI)* | `expresseval run --manifest data/manifests/sample_manifest.csv` |
+| **Custom ML Scripts** | 🐍 **Python API** *(Best for PyTorch training & notebook integration)* | `from expresseval.pipeline import EvaluationPipeline` |
 
 ```bash
 git clone https://github.com/Scrooge-777/voxexpress-eval.git && cd voxexpress-eval
 pip install -e .
 
-# Run the interactive quickstart evaluation demo:
+# 🌟 BEST TO START: Run the standalone evaluation demo in 2 seconds
 python examples/quickstart_eval.py
-
-# Or evaluate a full dataset manifest via CLI:
-expresseval run --manifest data/manifests/sample_manifest.csv
 ```
 
 📖 **Detailed Walkthrough:** Read the complete [Quickstart & Practical Usage Tutorial](docs/quickstart.md) for full CLI parameters, manifest specifications, and programmatic Python integration.
 
 ---
 
-## 📊 Benchmark Results
+## 📊 Benchmark Leaderboard: Which Model is Best?
 
 Evaluated across multilingual test benchmarks with human Mean Opinion Score (MOS) ground truth:
 
-| Model Architecture | Intelligibility (WER ↓ / CER ↓) | Prosody (F0 Range / Vel) | Naturalness (MOS ↑) | Speaker Sim (Cosine ↑) | Overall Score (0-100) |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **ChatTTS-Conversational-24k** | 0.04 / 0.02 | 12.98 st / 74.0 st/s | 4.35 | 0.91 | **94.5 / 100** |
-| **ElevenLabs-Multilingual-v2** | 0.02 / 0.01 | 10.14 st / 54.1 st/s | 4.28 | 0.94 | **88.2 / 100** |
-| **MMS-TTS-Neutral-Baseline** | 0.08 / 0.05 | 4.32 st / 22.9 st/s | 3.40 | 0.78 | **62.4 / 100** |
-| **Acoustic-Monotone-Baseline** | 0.15 / 0.11 | 2.49 st / 19.1 st/s | 2.65 | 0.65 | **41.8 / 100** |
+| Rank | Model Architecture | Intelligibility (WER ↓ / CER ↓) | Prosody (F0 Range / Vel) | Naturalness (MOS ↑) | Speaker Sim (Cosine ↑) | Overall Score (0-100) | Best For |
+| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
+| 🥇 | **ChatTTS-Conversational-24k** | 0.04 / 0.02 | 12.98 st / 74.0 st/s | 4.35 | 0.91 | **94.5 / 100** | **Best Conversational Expressiveness & Prosody** |
+| 🥈 | **ElevenLabs-Multilingual-v2** | 0.02 / 0.01 | 10.14 st / 54.1 st/s | 4.28 | 0.94 | **88.2 / 100** | **Best Intelligibility & Speaker Similarity** |
+| 🥉 | **MMS-TTS-Neutral-Baseline** | 0.08 / 0.05 | 4.32 st / 22.9 st/s | 3.40 | 0.78 | **62.4 / 100** | Neutral Reference Baseline |
+| 4th | **Acoustic-Monotone-Baseline** | 0.15 / 0.11 | 2.49 st / 19.1 st/s | 2.65 | 0.65 | **41.8 / 100** | Lower Bound Control |
 
 ---
 

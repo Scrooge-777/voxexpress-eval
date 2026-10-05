@@ -15,6 +15,15 @@ This guide provides everything you need to start evaluating generated speech wav
 6. [Training & Using the Ridge Aggregator](#6-training--using-the-ridge-aggregator)
 7. [Inspecting Telemetry & Benchmark Leaderboards](#7-inspecting-telemetry--benchmark-leaderboards)
 
+## 🧭 Which Workflow is Best for You?
+
+| Use Case | Best Approach | What to Run | Why It's Best |
+| :--- | :--- | :--- | :--- |
+| **Instant Verification** | 🌟 **Interactive Demo** | `python examples/quickstart_eval.py` | Runs immediately with bundled sample audio; outputs all 7 metrics & predicted MOS in 2s. |
+| **Visual Audio Testing** | 🎨 **Gradio Web Interface** | `python app/gradio_app.py` | Drag-and-drop audio files in your browser and view ASCII / graphical radar breakdowns. |
+| **Dataset & Pipeline Scoring** | 🚀 **CLI Batch Pipeline** | `expresseval run --manifest <path>` | Evaluates hundreds of generated audio files and exports CSV / Parquet score reports. |
+| **Model Development & Training**| 🐍 **Python Library API** | `from expresseval.pipeline import ...` | Plugs directly into PyTorch training loops or automated validation callbacks. |
+
 ---
 
 ## 1. Installation
