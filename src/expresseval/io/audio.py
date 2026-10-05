@@ -34,14 +34,22 @@ def compute_file_hash(file_path: str) -> str:
 
 def normalize_loudness(audio: np.ndarray, target_db: float = -23.0) -> np.ndarray:
     """RMS loudness normalization matching EBU R128 target levels."""
+    audio = np.asarray(audio, dtype=np.float32)
+    if audio.size == 0:
+        return np.zeros_like(audio, dtype=np.float32)
+
     rms = np.sqrt(np.mean(audio ** 2) + 1e-12)
+    if not np.isfinite(rms) or rms < 1e-12:
+        return np.zeros_like(audio, dtype=np.float32)
+
     current_db = 20.0 * np.log10(rms)
     gain_db = target_db - current_db
     gain = 10.0 ** (gain_db / 20.0)
     normalized = audio * gain
+
     # Soft-clip to prevent digital wrap-around distortion
     max_val = np.max(np.abs(normalized))
-    if max_val > 1.0:
+    if np.isfinite(max_val) and max_val > 1.0:
         normalized = normalized / max_val
     return normalized.astype(np.float32)
 
