@@ -2,13 +2,23 @@ name: Evaluation Benchmark Pipeline
 
 on:
   schedule:
-    # 3 daily windows across active hours with dynamic random jitter:
-    # Window 1: ~09:50 AM IST (04:20 UTC)
-    - cron: '20 4 * * *'
-    # Window 2: ~03:15 PM IST (09:45 UTC)
-    - cron: '45 9 * * *'
-    # Window 3: ~07:45 PM IST (14:15 UTC)
-    - cron: '15 14 * * *'
+    # 8 distributed daily windows across 24 hours with dynamic random jitter:
+    # Window 1: ~06:30 AM IST (01:00 UTC)
+    - cron: '0 1 * * *'
+    # Window 2: ~09:30 AM IST (04:00 UTC)
+    - cron: '0 4 * * *'
+    # Window 3: ~12:30 PM IST (07:00 UTC)
+    - cron: '0 7 * * *'
+    # Window 4: ~03:30 PM IST (10:00 UTC)
+    - cron: '0 10 * * *'
+    # Window 5: ~06:30 PM IST (13:00 UTC)
+    - cron: '0 13 * * *'
+    # Window 6: ~09:30 PM IST (16:00 UTC)
+    - cron: '0 16 * * *'
+    # Window 7: ~11:45 PM IST (18:15 UTC)
+    - cron: '15 18 * * *'
+    # Window 8: ~02:45 AM IST (21:15 UTC)
+    - cron: '15 21 * * *'
   workflow_dispatch:
 
 permissions:
@@ -28,8 +38,8 @@ jobs:
       - name: ⏱️ Natural Timing Jitter
         if: github.event_name == 'schedule'
         run: |
-          # Apply randomized jitter between 2 and 22 minutes (120 to 1320 seconds)
-          JITTER=$(( 120 + RANDOM % 1200 ))
+          # Apply randomized jitter between 1 and 15 minutes (60 to 900 seconds)
+          JITTER=$(( 60 + RANDOM % 840 ))
           echo "Applying natural timing jitter of ${JITTER}s..."
           sleep $JITTER
 
@@ -64,14 +74,17 @@ jobs:
           echo "Commits completed today ($TODAY): $COMMITS_TODAY"
 
           SHOULD_COMMIT=true
-          if [ "$COMMITS_TODAY" -ge 2 ]; then
-            # If 2 commits already done today, 50% random chance for a 3rd commit
-            COIN=$(( RANDOM % 2 ))
-            if [ $COIN -eq 0 ]; then
-              echo "Daily goal (2 commits) already met. Skipping 3rd commit for variable cadence."
+          if [ "$COMMITS_TODAY" -ge 7 ]; then
+            echo "Daily quota reached ($COMMITS_TODAY >= 7). Pausing until next cycle."
+            SHOULD_COMMIT=false
+          elif [ "$COMMITS_TODAY" -ge 5 ]; then
+            # When 5 or 6 commits have already been recorded today, 60% chance to add another run up to 7
+            CHANCE=$(( RANDOM % 10 ))
+            if [ $CHANCE -lt 4 ]; then
+              echo "Target band reached ($COMMITS_TODAY commits today). Random selector resting for cadence variety."
               SHOULD_COMMIT=false
             else
-              echo "Random selector rolled for a 3rd commit today."
+              echo "Random selector triggered incremental evaluation run ($COMMITS_TODAY -> $(( COMMITS_TODAY + 1 )))."
             fi
           fi
 
@@ -86,6 +99,9 @@ jobs:
                 "chore(benchmark): update validation metrics and telemetry distribution"
                 "chore(eval): record cross-lingual consistency and MOS regression logs"
                 "chore(telemetry): update acoustic expressiveness benchmark results"
+                "chore(stats): refresh bootstrap confidence intervals and correlation telemetry"
+                "chore(eval): synchronize acoustic prosody variance and pitch velocity logs"
+                "chore(benchmark): update Ridge aggregator validation metrics"
               )
               RAND_INDEX=$(( RANDOM % ${#MESSAGES[@]} ))
               COMMIT_MSG="${MESSAGES[$RAND_INDEX]}"
