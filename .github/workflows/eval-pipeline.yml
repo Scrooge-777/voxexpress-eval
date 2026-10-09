@@ -2,23 +2,19 @@ name: Evaluation Benchmark Pipeline
 
 on:
   schedule:
-    # 8 distributed daily windows across 24 hours with dynamic random jitter:
-    # Window 1: ~06:30 AM IST (01:00 UTC)
-    - cron: '0 1 * * *'
-    # Window 2: ~09:30 AM IST (04:00 UTC)
-    - cron: '0 4 * * *'
-    # Window 3: ~12:30 PM IST (07:00 UTC)
-    - cron: '0 7 * * *'
-    # Window 4: ~03:30 PM IST (10:00 UTC)
-    - cron: '0 10 * * *'
-    # Window 5: ~06:30 PM IST (13:00 UTC)
-    - cron: '0 13 * * *'
-    # Window 6: ~09:30 PM IST (16:00 UTC)
-    - cron: '0 16 * * *'
-    # Window 7: ~11:45 PM IST (18:15 UTC)
+    # 12 distributed daily windows every 2 hours with dynamic random jitter:
+    - cron: '15 0 * * *'
+    - cron: '15 2 * * *'
+    - cron: '15 4 * * *'
+    - cron: '15 6 * * *'
+    - cron: '15 8 * * *'
+    - cron: '15 10 * * *'
+    - cron: '15 12 * * *'
+    - cron: '15 14 * * *'
+    - cron: '15 16 * * *'
     - cron: '15 18 * * *'
-    # Window 8: ~02:45 AM IST (21:15 UTC)
-    - cron: '15 21 * * *'
+    - cron: '15 20 * * *'
+    - cron: '15 22 * * *'
   workflow_dispatch:
 
 permissions:
@@ -95,17 +91,21 @@ jobs:
             IS_REST_DAY=true
           fi
 
-          # 4. Randomized daily quota for active days (varying between 1 and 6 commits)
-          TARGET_QUOTA=$(( 1 + (DAY_HASH % 6) ))
-          echo "Determined daily quota: $TARGET_QUOTA commits"
+          # 4. Randomized daily quota (least: 0, max: 10 commits)
+          if [ "$IS_REST_DAY" = true ]; then
+            TARGET_QUOTA=0
+          else
+            TARGET_QUOTA=$(( 1 + (DAY_HASH % 10) ))
+          fi
+          echo "Determined daily quota: $TARGET_QUOTA commits (Least: 0, Max: 10)"
 
           # 5. Evaluate commit decision
           SHOULD_COMMIT=false
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "Manual workflow dispatch event detected: forcing commit override."
             SHOULD_COMMIT=true
-          elif [ "$IS_REST_DAY" = true ]; then
-            echo "Today is a rest/lag day (target: 0 commits). Skipping commit."
+          elif [ "$TARGET_QUOTA" -eq 0 ]; then
+            echo "Today is a rest/lag day (quota: 0 commits). Skipping commit."
             SHOULD_COMMIT=false
           elif [ "$COMMITS_TODAY" -ge "$TARGET_QUOTA" ]; then
             echo "Daily target achieved ($COMMITS_TODAY >= $TARGET_QUOTA). Resting until next active day."
