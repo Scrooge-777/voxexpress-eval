@@ -68,27 +68,51 @@ jobs:
           git config user.name "Scrooge-777"
           git config user.email "318593710+Scrooge-777@users.noreply.github.com"
           
-          # Determine today's commit count
+          # 1. Determine date and day-of-week metadata
           TODAY=$(date -u +"%Y-%m-%d")
+          DOW=$(date -u +"%u")        # 1=Monday ... 6=Saturday, 7=Sunday
+          DAY_NUM=$(date -u +"%j")    # Day of year (1-366)
+          YEAR=$(date -u +"%Y")
+          
+          # 2. Check today's existing commit count
           COMMITS_TODAY=$(git log --since="$TODAY 00:00" --author="Scrooge-777" --oneline | wc -l)
-          echo "Commits completed today ($TODAY): $COMMITS_TODAY"
+          echo "Date: $TODAY (Day of week: $DOW) | Commits completed today: $COMMITS_TODAY"
 
-          SHOULD_COMMIT=true
+          # 3. Calculate natural rest/lag days
+          # Weekend rest: 2-day lag every week (Saturday & Sunday)
+          IS_REST_DAY=false
+          if [ "$DOW" -eq 6 ] || [ "$DOW" -eq 7 ]; then
+            echo "Weekend detected (DOW $DOW) -> 2-day natural rest lag."
+            IS_REST_DAY=true
+          fi
+
+          # Deterministic daily seed so all schedule runs within the same day agree
+          DAY_HASH=$(( (10#$DAY_NUM * 37 + 10#$YEAR) % 100 ))
+
+          # Occasional mid-week pause (roughly 1 in 8 weekdays)
+          if [ "$DOW" -le 5 ] && [ $(( DAY_HASH % 8 )) -eq 0 ]; then
+            echo "Occasional mid-week reading/research day detected -> natural 1-day pause."
+            IS_REST_DAY=true
+          fi
+
+          # 4. Randomized daily quota for active days (varying between 1 and 6 commits)
+          TARGET_QUOTA=$(( 1 + (DAY_HASH % 6) ))
+          echo "Determined daily quota: $TARGET_QUOTA commits"
+
+          # 5. Evaluate commit decision
+          SHOULD_COMMIT=false
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "Manual workflow dispatch event detected: forcing commit."
+            echo "Manual workflow dispatch event detected: forcing commit override."
             SHOULD_COMMIT=true
-          elif [ "$COMMITS_TODAY" -ge 7 ]; then
-            echo "Daily quota reached ($COMMITS_TODAY >= 7). Pausing until next cycle."
+          elif [ "$IS_REST_DAY" = true ]; then
+            echo "Today is a rest/lag day (target: 0 commits). Skipping commit."
             SHOULD_COMMIT=false
-          elif [ "$COMMITS_TODAY" -ge 5 ]; then
-            # When 5 or 6 commits have already been recorded today, 60% chance to add another run up to 7
-            CHANCE=$(( RANDOM % 10 ))
-            if [ $CHANCE -lt 4 ]; then
-              echo "Target band reached ($COMMITS_TODAY commits today). Random selector resting for cadence variety."
-              SHOULD_COMMIT=false
-            else
-              echo "Random selector triggered incremental evaluation run ($COMMITS_TODAY -> $(( COMMITS_TODAY + 1 )))."
-            fi
+          elif [ "$COMMITS_TODAY" -ge "$TARGET_QUOTA" ]; then
+            echo "Daily target achieved ($COMMITS_TODAY >= $TARGET_QUOTA). Resting until next active day."
+            SHOULD_COMMIT=false
+          else
+            echo "Active day ($COMMITS_TODAY / $TARGET_QUOTA commits). Proceeding with evaluation commit."
+            SHOULD_COMMIT=true
           fi
 
           if [ "$SHOULD_COMMIT" = true ]; then
