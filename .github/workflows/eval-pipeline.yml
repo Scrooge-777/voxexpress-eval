@@ -75,32 +75,39 @@ jobs:
           COMMITS_TODAY=$(git log --since="$TODAY 00:00" --author="Scrooge-777" --oneline | wc -l)
           echo "Date: $TODAY (Day of week: $DOW, Week: $WEEK_NUM) | Commits completed today: $COMMITS_TODAY"
 
-          # 3. Deterministic seeds so runs within the same day/week agree
+          # 3. Deterministic date hashing and rhythm pattern
           DAY_HASH=$(( (10#$DAY_NUM * 37 + 10#$YEAR) % 100 ))
-          WEEK_HASH=$(( (10#$WEEK_NUM * 19 + 10#$YEAR) % 100 ))
+          EPOCH_DAYS=$(( $(date -u +%s) / 86400 ))
 
-          # 4. Randomized daily quota calculation:
-          # On Weekends (Saturday=6, Sunday=7):
-          # Alternates between an authentic 2-day rest lag (0 commits) and light casual coding (1 to 5 commits)
-          if [ "$DOW" -eq 6 ] || [ "$DOW" -eq 7 ]; then
-            if [ $(( WEEK_HASH % 2 )) -eq 0 ]; then
-              TARGET_QUOTA=0
-              echo "Weekend 2-day rest lag detected (DOW $DOW, Week $WEEK_NUM) -> 0 commits (Authentic 2-day break)."
-            else
-              TARGET_QUOTA=$(( 1 + (DAY_HASH % 5) ))
-              echo "Weekend light activity detected (DOW $DOW) -> $TARGET_QUOTA commits (Random 1 to 5)."
-            fi
+          # Organic activity pattern (0 = Rest/No commits, 1 = Active commits)
+          # Configured to provide:
+          # - 2 days rest lag starting tomorrow (Oct 11-12)
+          # - Followed by 3 days active commits (Oct 13-15)
+          # - Followed by 1 day rest lag (Oct 16)
+          # - Natural alternating blocks of 1-2 continuous rest days and 2-5 active days
+          PATTERN="0011101111001110110011110111001101111100111011100"
+          ANCHOR_EPOCH_DAYS=20737 # Sunday, Oct 11, 2026
+
+          if [ "$EPOCH_DAYS" -lt "$ANCHOR_EPOCH_DAYS" ]; then
+            # Current day prior to anchor (Today: Oct 10)
+            IS_REST_DAY=false
           else
-            # On Weekdays:
-            # ~15% chance of random mid-week rest/pause (0 commits)
-            if [ $(( DAY_HASH % 7 )) -eq 0 ]; then
-              TARGET_QUOTA=0
-              echo "Random weekday rest lag detected -> 0 commits."
+            OFFSET=$(( (EPOCH_DAYS - ANCHOR_EPOCH_DAYS) % 49 ))
+            DAY_STATE="${PATTERN:$OFFSET:1}"
+            if [ "$DAY_STATE" = "0" ]; then
+              IS_REST_DAY=true
             else
-              # Active weekdays: random quota from 1 to 10 commits
-              TARGET_QUOTA=$(( 1 + (DAY_HASH % 10) ))
-              echo "Active weekday detected -> $TARGET_QUOTA commits (Random 1 to 10)."
+              IS_REST_DAY=false
             fi
+          fi
+
+          # 4. Randomized daily quota calculation (Least: 0, Max: 10):
+          if [ "$IS_REST_DAY" = true ]; then
+            TARGET_QUOTA=0
+            echo "Scheduled rest day detected -> 0 commits (Natural pause/lag)."
+          else
+            TARGET_QUOTA=$(( 1 + (DAY_HASH % 10) ))
+            echo "Active day detected -> Target quota: $TARGET_QUOTA commits (Random 1 to 10)."
           fi
           echo "Final determined daily quota: $TARGET_QUOTA commits"
 
