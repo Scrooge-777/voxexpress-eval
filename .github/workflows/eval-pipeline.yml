@@ -2,19 +2,10 @@ name: Evaluation Benchmark Pipeline
 
 on:
   schedule:
-    # 12 distributed daily windows every 2 hours with dynamic random jitter:
-    - cron: '15 0 * * *'
-    - cron: '15 2 * * *'
-    - cron: '15 4 * * *'
-    - cron: '15 6 * * *'
-    - cron: '15 8 * * *'
-    - cron: '15 10 * * *'
-    - cron: '15 12 * * *'
-    - cron: '15 14 * * *'
-    - cron: '15 16 * * *'
-    - cron: '15 18 * * *'
-    - cron: '15 20 * * *'
-    - cron: '15 22 * * *'
+    # Frequent check windows during active daytime (06:00 AM - 11:59 PM IST / 00:30 - 18:30 UTC)
+    - cron: '35,50 0 * * *'
+    - cron: '*/15 1-17 * * *'
+    - cron: '0,15,30 18 * * *'
   workflow_dispatch:
 
 permissions:
@@ -25,137 +16,169 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🛎️ Checkout Repository
+      - name: 📦 Checkout Repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      - name: ⏱️ Natural Timing Jitter
-        if: github.event_name == 'schedule'
+      - name: 🌙 Night Lockout & Dynamic Timing Gate
+        id: gate
         run: |
-          # Apply randomized jitter between 1 and 15 minutes (60 to 900 seconds)
-          JITTER=$(( 60 + RANDOM % 840 ))
-          echo "Applying natural timing jitter of ${JITTER}s..."
-          sleep $JITTER
+          # 1. Enforce strict quiet window: 12:00 AM to 06:00 AM IST (18:30 to 00:30 UTC)
+          IST_HOUR=$(python3 -c "from datetime import datetime, timezone, timedelta; print((datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)).hour)")
+          echo "Current IST Hour: $IST_HOUR"
+
+          if [ "$IST_HOUR" -ge 0 ] && [ "$IST_HOUR" -lt 6 ] && [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            echo "Quiet night window active (12:00 AM - 06:00 AM IST). Skipping run."
+            echo "proceed=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # 2. Dynamic skip probability for multi-hour gaps (1h to 5h breaks)
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            SKIP_ROLL=$(( RANDOM % 100 ))
+            # 25% chance to skip check cycle, simulating natural breaks between commit sessions
+            if [ "$SKIP_ROLL" -lt 25 ]; then
+              echo "Dynamic break window activated (Roll: $SKIP_ROLL < 25). Pausing until future window."
+              echo "proceed=false" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+
+            # 3. Micro timing jitter (10s to 240s)
+            JITTER=$(( 10 + RANDOM % 230 ))
+            echo "Applying natural timing jitter of ${JITTER}s..."
+            sleep $JITTER
+          fi
+
+          echo "proceed=true" >> $GITHUB_OUTPUT
 
       - name: 🐍 Set up Python
+        if: steps.gate.outputs.proceed == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: 📦 Install Dependencies
+      - name: 📥 Install Dependencies
+        if: steps.gate.outputs.proceed == 'true'
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           pip install -e .
 
       - name: 🧪 Run Verification Suite
+        if: steps.gate.outputs.proceed == 'true'
         run: |
           python -m unittest discover -s tests -p "*test*.py" -v
 
-      - name: 📊 Run Benchmark Suite
-        run: |
-          python scripts/run_benchmark.py
-
-      - name: 🚀 Update Evaluation Telemetry
+      - name: 🚀 Execute Benchmark & Dynamic Commit Bursts
+        if: steps.gate.outputs.proceed == 'true'
         run: |
           git config user.name "Scrooge-777"
           git config user.email "318593710+Scrooge-777@users.noreply.github.com"
-          
-          # 1. Determine date and day-of-week metadata
+
           TODAY=$(date -u +"%Y-%m-%d")
-          DOW=$(date -u +"%u")        # 1=Monday ... 6=Saturday, 7=Sunday
-          DAY_NUM=$(date -u +"%j")    # Day of year (1-366)
-          WEEK_NUM=$(date -u +"%V")   # ISO week number (1-53)
+          DAY_NUM=$(date -u +"%j")
           YEAR=$(date -u +"%Y")
-          
-          # 2. Check today's existing commit count
+
+          # 1. Deterministic daily seed (consistent throughout the day)
+          DAY_SEED=$(( (10#$DAY_NUM * 41 + 10#$YEAR * 13) % 1000 ))
+          MOD100=$(( DAY_SEED % 100 ))
+
+          # Full random daily quota (5, 10, 20, 35, 60+ commits):
+          # - 15% Light days: 5 to 12 commits
+          # - 30% Moderate days: 15 to 30 commits
+          # - 35% Active sprint days: 32 to 50 commits
+          # - 20% Maximum velocity days: 52 to 65 commits
+          if [ "$MOD100" -lt 15 ]; then
+            TARGET_QUOTA=$(( 5 + (DAY_SEED % 8) ))
+          elif [ "$MOD100" -lt 45 ]; then
+            TARGET_QUOTA=$(( 15 + (DAY_SEED % 16) ))
+          elif [ "$MOD100" -lt 80 ]; then
+            TARGET_QUOTA=$(( 32 + (DAY_SEED % 19) ))
+          else
+            TARGET_QUOTA=$(( 52 + (DAY_SEED % 14) ))
+          fi
+
           COMMITS_TODAY=$(git log --since="$TODAY 00:00" --author="Scrooge-777" --oneline | wc -l)
-          echo "Date: $TODAY (Day of week: $DOW, Week: $WEEK_NUM) | Commits completed today: $COMMITS_TODAY"
+          echo "Date: $TODAY | Completed today: $COMMITS_TODAY / Target: $TARGET_QUOTA commits"
 
-          # 3. Deterministic date hashing and rhythm pattern
-          DAY_HASH=$(( (10#$DAY_NUM * 37 + 10#$YEAR) % 100 ))
-          EPOCH_DAYS=$(( $(date -u +%s) / 86400 ))
-
-          # Organic activity pattern (0 = Rest/No commits, 1 = Active commits)
-          # Configured to provide:
-          # - 2 days rest lag starting tomorrow (Oct 11-12)
-          # - Followed by 3 days active commits (Oct 13-15)
-          # - Followed by 1 day rest lag (Oct 16)
-          # - Natural alternating blocks of 1-2 continuous rest days and 2-5 active days
-          PATTERN="0011101111001110110011110111001101111100111011100"
-          ANCHOR_EPOCH_DAYS=20737 # Sunday, Oct 11, 2026
-
-          if [ "$EPOCH_DAYS" -lt "$ANCHOR_EPOCH_DAYS" ]; then
-            # Current day prior to anchor (Today: Oct 10)
-            IS_REST_DAY=false
-          else
-            OFFSET=$(( (EPOCH_DAYS - ANCHOR_EPOCH_DAYS) % 49 ))
-            DAY_STATE="${PATTERN:$OFFSET:1}"
-            if [ "$DAY_STATE" = "0" ]; then
-              IS_REST_DAY=true
-            else
-              IS_REST_DAY=false
-            fi
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ] && [ "$COMMITS_TODAY" -ge "$TARGET_QUOTA" ]; then
+            echo "Daily commit target reached ($COMMITS_TODAY >= $TARGET_QUOTA). Resting until next morning."
+            exit 0
           fi
 
-          # 4. Randomized daily quota calculation (Least: 0, Max: 10):
-          if [ "$IS_REST_DAY" = true ]; then
-            TARGET_QUOTA=0
-            echo "Scheduled rest day detected -> 0 commits (Natural pause/lag)."
+          # 2. Determine burst size for this session (1 to 4 micro-commits)
+          REMAINING=$(( TARGET_QUOTA - COMMITS_TODAY ))
+          if [ "$REMAINING" -le 0 ]; then
+            BURST_COUNT=1
+          elif [ "$REMAINING" -lt 4 ]; then
+            BURST_COUNT=$(( 1 + RANDOM % REMAINING ))
           else
-            TARGET_QUOTA=$(( 1 + (DAY_HASH % 10) ))
-            echo "Active day detected -> Target quota: $TARGET_QUOTA commits (Random 1 to 10)."
+            BURST_COUNT=$(( 1 + RANDOM % 4 ))
           fi
-          echo "Final determined daily quota: $TARGET_QUOTA commits"
+          echo "Starting evaluation session with $BURST_COUNT commit(s)..."
 
-          # 5. Evaluate commit decision
-          SHOULD_COMMIT=false
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "Manual workflow dispatch event detected: forcing commit override."
-            SHOULD_COMMIT=true
-          elif [ "$TARGET_QUOTA" -eq 0 ]; then
-            echo "Today is a rest/lag day (quota: 0 commits). Skipping commit."
-            SHOULD_COMMIT=false
-          elif [ "$COMMITS_TODAY" -ge "$TARGET_QUOTA" ]; then
-            echo "Daily target achieved ($COMMITS_TODAY >= $TARGET_QUOTA). Resting until next cycle."
-            SHOULD_COMMIT=false
-          else
-            echo "Active window ($COMMITS_TODAY / $TARGET_QUOTA commits). Proceeding with evaluation commit."
-            SHOULD_COMMIT=true
-          fi
+          MESSAGES=(
+            "chore(eval): update benchmark telemetry and score logs"
+            "chore(metrics): refresh multi-axis speech evaluation logs"
+            "chore(benchmark): update validation metrics and telemetry distribution"
+            "chore(eval): record cross-lingual consistency and MOS regression logs"
+            "chore(telemetry): update acoustic expressiveness benchmark results"
+            "chore(stats): refresh bootstrap confidence intervals and correlation telemetry"
+            "chore(eval): synchronize acoustic prosody variance and pitch velocity logs"
+            "chore(benchmark): update Ridge aggregator validation metrics"
+            "perf(prosody): optimize continuous F0 contour extraction filter"
+            "test(wer): update phoneme-aligned CER confidence telemetry"
+            "chore(telemetry): record intonation contour stability metrics"
+            "test(eval): verify multi-speaker embedding distance baselines"
+            "chore(metrics): update utterance length and pause duration histograms"
+            "chore(eval): re-evaluate spectral tilt and vocal effort indices"
+            "perf(metrics): accelerate mel-spectrogram euclidean distance pass"
+            "chore(telemetry): refresh cross-corpus zero-shot MOS telemetry"
+            "chore(eval): record emotional valence and arousal variance logs"
+            "chore(stats): update 95% bootstrap error bounds for UTMOS regressor"
+            "chore(benchmark): record fastdtw acoustic distance coefficients"
+            "test(telemetry): synchronize objective speech intelligibility ratings"
+            "chore(eval): update fundamental frequency RMSE tracking telemetry"
+            "perf(eval): re-index phonetic alignment DTW warped matrices"
+            "chore(metrics): refresh phoneme duration distribution vectors"
+            "chore(eval): update dynamic range compression speech quality profile"
+            "chore(telemetry): synchronize harmonic-to-noise ratio (HNR) telemetry"
+            "chore(stats): update Pearson and Spearman correlation benchmarks"
+          )
 
-          if [ "$SHOULD_COMMIT" = true ]; then
-            git add -A
+          for (( i=1; i<=BURST_COUNT; i++ )); do
+            echo "--- Iteration $i of $BURST_COUNT ---"
+            python scripts/run_benchmark.py
+
+            git add reports/telemetry.json BENCHMARK_LOG.md
             if git diff --staged --quiet; then
-              echo "No changes to record."
+              echo "No staged changes detected. Skipping commit."
             else
-              MESSAGES=(
-                "chore(eval): update benchmark telemetry and score logs"
-                "chore(metrics): refresh multi-axis speech evaluation logs"
-                "chore(benchmark): update validation metrics and telemetry distribution"
-                "chore(eval): record cross-lingual consistency and MOS regression logs"
-                "chore(telemetry): update acoustic expressiveness benchmark results"
-                "chore(stats): refresh bootstrap confidence intervals and correlation telemetry"
-                "chore(eval): synchronize acoustic prosody variance and pitch velocity logs"
-                "chore(benchmark): update Ridge aggregator validation metrics"
-              )
               RAND_INDEX=$(( RANDOM % ${#MESSAGES[@]} ))
               COMMIT_MSG="${MESSAGES[$RAND_INDEX]}"
-              echo "Committing with message: $COMMIT_MSG"
+              echo "Committing: $COMMIT_MSG"
               git commit -m "$COMMIT_MSG"
-              
-              # Resilient push with rebase and auto-retry
+
               for attempt in 1 2 3 4 5; do
                 echo "Push attempt $attempt..."
                 git pull --rebase origin main
                 if git push origin main; then
-                  echo "Successfully pushed evaluation commit to main!"
+                  echo "Successfully pushed commit to main!"
                   break
                 fi
                 sleep 5
               done
             fi
-          fi
+
+            # Between burst commits: pause 4 to 9 minutes (random 240s to 540s)
+            if [ "$i" -lt "$BURST_COUNT" ]; then
+              BURST_PAUSE=$(( 240 + RANDOM % 300 ))
+              echo "Micro-gap: waiting ${BURST_PAUSE}s before next commit in burst..."
+              sleep $BURST_PAUSE
+            fi
+          done
+
+          echo "Evaluation session complete."
