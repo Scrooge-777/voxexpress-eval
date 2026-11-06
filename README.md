@@ -17,7 +17,7 @@ Traditionally, researchers had two imperfect options:
 1. **Pay human listeners** for Mean Opinion Score (MOS) surveys — accurate, but extremely slow, subjective, and expensive.
 2. **Use classical metrics** like Mel-Cepstral Distortion (MCD) — instant and free, but flawed: an expressive laugh or emotional pause ruins MCD scores even when a human loves the voice.
 
-**ExpressEval solves this.** It is an automated, objective evaluation suite that analyzes speech across **7 distinct acoustic and perceptual axes**, normalizes for language-specific phonetic baselines, and uses a **Graph Theory-trained aggregator** to predict human MOS ratings with 95% bootstrap confidence intervals.
+**ExpressEval solves this.** It is an automated, objective evaluation suite that analyzes speech across **7 distinct acoustic and perceptual axes**, normalizes for language-specific phonetic baselines, and fuses them with an aggregator. **Status: research prototype.** The aggregator is currently trained on synthetic data as a pipeline demo, several metrics are simple heuristics (see the table below), and no human-MOS validation has been done yet.
 
 ---
 
@@ -35,14 +35,14 @@ flowchart TD
     end
 
     subgraph IO ["2. Preprocessing & Caching"]
-        Load["Audio Loader & EBU R128 Loudness Normalizer"]
-        Cache["SHA-256 Feature Cache"]
+        Load["Audio Loader & RMS Loudness Normalizer"]
+        Cache["SHA-256 File Hashing"]
     end
 
     subgraph Engines ["3. 7-Axis Metric Fanout"]
         M1["Intelligibility Engine\n(WER / CER Levenshtein)"]
         M2["Prosodic Dynamics Engine\n(F0 Velocity, Pitch Range, DTW)"]
-        M3["Naturalness Estimator\n(Neural MOS Regressor)"]
+        M3["Naturalness Estimator\n(Crest-factor heuristic, placeholder)"]
         M4["Speaker Similarity Engine\n(Hyperspherical Cosine Sim)"]
         M5["Affect & Emotion Engine\n(2D Valence-Arousal Mapping)"]
         M6["Cross-Lingual Engine\n(LID Posterior & Accent Leakage)"]
@@ -131,16 +131,9 @@ python examples/quickstart_eval.py
 
 ---
 
-## 📊 Benchmark Leaderboard: Which Model is Best?
+## 📊 Benchmark Status
 
-Evaluated across multilingual test benchmarks with human Mean Opinion Score (MOS) ground truth:
-
-| Rank | Model Architecture | Intelligibility (WER ↓ / CER ↓) | Prosody (F0 Range / Vel) | Naturalness (MOS ↑) | Speaker Sim (Cosine ↑) | Overall Score (0-100) | Best For |
-| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| 🥇 | **ChatTTS-Conversational-24k** | 0.04 / 0.02 | 12.98 st / 74.0 st/s | 4.35 | 0.91 | **94.5 / 100** | **Best Conversational Expressiveness & Prosody** |
-| 🥈 | **ElevenLabs-Multilingual-v2** | 0.02 / 0.01 | 10.14 st / 54.1 st/s | 4.28 | 0.94 | **88.2 / 100** | **Best Intelligibility & Speaker Similarity** |
-| 🥉 | **MMS-TTS-Neutral-Baseline** | 0.08 / 0.05 | 4.32 st / 22.9 st/s | 3.40 | 0.78 | **62.4 / 100** | Neutral Reference Baseline |
-| 4th | **Acoustic-Monotone-Baseline** | 0.15 / 0.11 | 2.49 st / 19.1 st/s | 2.65 | 0.65 | **41.8 / 100** | Lower Bound Control |
+There is **no published leaderboard yet.** `scripts/run_benchmark.py` currently scores synthetic sine-wave signals with fixed per-model WER and similarity constants, so its output (`reports/telemetry.json`, `BENCHMARK_LOG.md`) is a smoke test of the pipeline, not a measurement of ChatTTS, ElevenLabs or any other real TTS system. A real leaderboard needs real synthesized audio, reference transcripts and human MOS ratings; that is on the roadmap in [`ROADMAP.md`](ROADMAP.md).
 
 ---
 
@@ -149,7 +142,7 @@ Evaluated across multilingual test benchmarks with human Mean Opinion Score (MOS
 | Axis | Metric Engine | Purpose in Expressive & Multilingual TTS |
 | :--- | :--- | :--- |
 | **Intelligibility** | WER, CER | Verifies that emotional/whispered delivery does not degrade lexical clarity. |
-| **Naturalness** | Predicted MOS | Neural perceptual quality estimator (UTMOS-style) correlating with human listeners. |
+| **Naturalness** | Crest-factor heuristic | Placeholder score. A neural MOS predictor (UTMOS-style) is planned but not implemented. |
 | **Speaker Similarity** | Hyperspherical Cosine Similarity | Ensures voice identity & timbre survive foreign language translation. |
 | **Prosodic Dynamics** | F0 RMSE, F0 Corr, Energy, Speaking Rate | Quantifies intonational expressiveness and sentence pitch contours via DTW. |
 | **Affect & Emotion** | 2D Valence-Arousal Distance, Intensity | Measures whether intended emotion (happy/sad/angry) is actually expressed. |

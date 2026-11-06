@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "expresseval"
-version = "0.1.0"
+version = "0.2.0"
 description = "Automatic Objective Evaluation of Multilingual Expressive Speech Synthesis (TTS)"
 authors = [
     { name = "Scrooge-777", email = "318593710+Scrooge-777@users.noreply.github.com" }
